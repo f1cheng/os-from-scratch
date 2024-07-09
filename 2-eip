@@ -1,0 +1,7 @@
+load eip to address bus.
+read the data to data bus.
+pass the code intruction to instruction buffer.
+eip increased.
+execute instruction in buffer (call x (push eip; jump near/far address which is update the eip).
+
+loop to step1.
