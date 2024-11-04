@@ -51,7 +51,8 @@ typedef struct context {
 
 v3
 ```
-x86 syntax: dest<-src:
+x86 syntax: dest<-src:  
+https://github.com/f1cheng/vTickSphere/blob/main/kernel/switchit.asm  
 
 [global switch_to]
 
@@ -59,7 +60,7 @@ switch_to:
     ; 保存现场
     mov eax, [esp + 4]------------old context ptr.
     
-    mov [eax + 0],  esp---------------here inside esp, it is stored this current old eip which is pointering next instruction when calling switch_to.
+    mov [eax + 0],  esp---------------here inside esp, it is stored this current (will be the old) eip which is pointering next instruction when calling switch_to.
     mov [eax + 4],  ebp
     mov [eax + 8],  ebx
     mov [eax + 12], esi
@@ -72,15 +73,15 @@ switch_to:
     ; 加载新环境
     mov eax, [esp + 8]-------------new context ptr storing into eax.
 
-    mov esp, [eax + 0]-------------inside esp, it is stored eip(fn), then, later "ret" it will pop eip and jmp it, to execute the new context's eip(fn).
-<<<<
-It is set during process creation phase for esp storage.
-    uint32_t *stack_top = (uint32_t *)((uint32_t)new_proc + STACK_SIZE);
-    *(--stack_top) = (uint32_t)arg;
-    *(--stack_top) = (uint32_t)kthread_exit;
-    *(--stack_top) = (uint32_t)fn;
-    new_proc->context.esp = (uint32_t)new_proc + STACK_SIZE - 3 * sizeof(uint32_t);
-<<<<
+    mov esp, [eax + 0]-------------inside esp, it stores eip as fn or eip as last saved instruction after switch_to, then, later "ret" it will pop eip and jmp it, to execute the new context's eip.
+      <<<<
+       It is set during process creation phase for esp storage.
+       uint32_t *stack_top = (uint32_t *)((uint32_t)new_proc + STACK_SIZE);
+       *(--stack_top) = (uint32_t)arg;
+       *(--stack_top) = (uint32_t)kthread_exit;
+       *(--stack_top) = (uint32_t)fn;
+       new_proc->context.esp = (uint32_t)new_proc + STACK_SIZE - 3 * sizeof(uint32_t);
+      <<<<
 
     mov ebp, [eax + 4]
     mov ebx, [eax + 8]
